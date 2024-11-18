@@ -1,0 +1,5 @@
+i want a single-page layout that fits within the viewport without scrolling, rather than hiding the scrollbar while content remains scrollable.
+
+Let's modify the code to achieve a true single-page layout. The key changes will be:
+
+Ensure the main content area fits within the viewport Remove overflow scrolling Adjust padding and spacing to prevent content overflow and also the main content area has rounded edge and always send me the complete revised code, not just partials code, i hate partials code
