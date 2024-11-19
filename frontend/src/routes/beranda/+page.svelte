@@ -200,7 +200,7 @@
                 builders={[builder]}
               >
                 <img
-                  src="/images/placeholder-user.jpg"
+                  src="/01.png"
                   width={32}
                   height={32}
                   alt="Avatar"

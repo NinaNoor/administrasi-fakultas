@@ -170,6 +170,27 @@
             />
           </div>
 
+          <Button
+            variant="outline"
+            size="icon"
+            class="rounded-full h-8 w-8"
+            on:click={toggleMode}
+          >
+            {#if darkMode}
+              <Sun class="h-4 w-4" />
+            {:else}
+              <Moon class="h-4 w-4" />
+            {/if}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="icon"
+            class="rounded-full h-8 w-8"
+          >
+            <Bell class="h-4 w-4" />
+          </Button>
+
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild let:builder>
               <Button
@@ -179,7 +200,7 @@
                 builders={[builder]}
               >
                 <img
-                  src="/images/placeholder-user.jpg"
+                  src="/01.png"
                   width={32}
                   height={32}
                   alt="Avatar"
@@ -189,19 +210,6 @@
             </DropdownMenu.Trigger>
             <DropdownMenu.Content align="end">
               <DropdownMenu.Label>Akun Saya</DropdownMenu.Label>
-              <DropdownMenu.Separator />
-              <DropdownMenu.Item on:click={toggleMode}>
-                <div class="flex items-center space-x-2">
-                  <Sun class="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-                  <span>Mode Gelap</span>
-                </div>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item>
-                <div class="flex items-center space-x-2">
-                  <Bell class="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-                  <span>Notifikasi</span>
-                </div>
-              </DropdownMenu.Item>
               <DropdownMenu.Separator />
               <DropdownMenu.Item>Pengaturan</DropdownMenu.Item>
               <DropdownMenu.Item>Dukungan</DropdownMenu.Item>

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { Sun, Moon, Bell, Search } from 'lucide-svelte';
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -72,13 +71,8 @@
 
   const setActiveMenu = async (menu: { label: string; href: string; submenus: { label: string; href: string }[] }) => {
     activeMenu = menu;
-    if (menu.submenus.length > 0) {
-      activeSubmenu = menu.submenus[0];
-      await goto(menu.submenus[0].href);
-    } else {
-      activeSubmenu = null;
-      await goto(menu.href);
-    }
+    activeSubmenu = menu.submenus.length > 0 ? menu.submenus[0] : null;
+    await goto(activeSubmenu ? activeSubmenu.href : menu.href);
   };
 
   const setActiveSubmenu = async (submenu: { label: string; href: string }) => {
@@ -89,159 +83,154 @@
   const goBack = () => {
     window.history.back();
   };
-
-  onMount(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    }
-    const currentPath = $page.url.pathname;
-    const currentMenu = menus.find(menu => currentPath.startsWith(menu.href));
-    if (currentMenu) {
-      if (currentMenu.submenus.length > 0) {
-        const currentSubmenu = currentMenu.submenus.find(submenu => submenu.href === currentPath);
-        if (currentSubmenu) {
-          activeSubmenu = currentSubmenu;
-        } else {
-          activeSubmenu = currentMenu.submenus[0];
-        }
-      }
-      activeMenu = currentMenu;
-    }
-  });
 </script>
 
-<div class="grid h-[100vh] grid-rows-[1fr,auto] bg-black text-white">
-  <div class="p-4 row-start-1">
-    <main class="h-full bg-white text-black rounded-[24px] flex flex-col dark:bg-zinc-900 dark:text-white overflow-hidden">
-      <div class="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0 relative">
-        <div class="flex items-center h-16 px-6">
-          <Button variant="outline" size="icon" on:click={goBack} class="rounded-full h-8 w-8 flex items-center justify-center">
-            <ChevronLeft class="h-4 w-4" />
-          </Button>
+<div class="layout-container">
+  <div class="bg-transparent backdrop-blur-sm border-zinc-200/50 dark:border-zinc-800/50 flex-shrink-0 relative">
+    <div class="flex items-center h-16 px-6">
+      <!-- Back Button -->
+      <Button variant="outline" size="icon" on:click={goBack} class="rounded-full h-8 w-8 flex items-center justify-center">
+        <ChevronLeft class="h-4 w-4" />
+      </Button>
 
-          <div class="flex bg-zinc-100 dark:bg-zinc-800 rounded-full p-1 ml-4">
-            {#each menus as menu}
-              {@const isActive = menu === activeMenu}
-              <a
-                href={menu.href}
-                class="px-4 py-1 text-sm transition-colors duration-200 rounded-full
-                  {isActive ? 
-                    'bg-black text-white dark:bg-white dark:text-black shadow-sm' : 
-                    'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}"
-                on:click|preventDefault={() => setActiveMenu(menu)}
-              >
-                {menu.label}
-              </a>
-            {/each}
-          </div>
+      <!-- Navigation Tab Menu -->
+      <div class="flex bg-zinc-100 dark:bg-zinc-800 rounded-full p-1 ml-4">
+        {#each menus as menu}
+          {@const isActive = menu === activeMenu}
+          <a
+            href={menu.href}
+            class="px-4 py-1 text-sm transition-colors duration-200 rounded-full
+              {isActive ? 
+                'bg-black text-white dark:bg-white dark:text-black shadow-sm' : 
+                'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}"
+            on:click|preventDefault={() => setActiveMenu(menu)}
+          >
+            {menu.label}
+          </a>
+        {/each}
+      </div>
 
-          {#if activeMenu.submenus.length > 0}
-            <div class="flex bg-zinc-100 dark:bg-zinc-800 rounded-full p-1 ml-4">
-              {#each activeMenu.submenus as submenu}
-                {@const isActive = submenu === activeSubmenu}
-                <a
-                  href={submenu.href}
-                  class="px-4 py-1 text-sm transition-colors duration-200 rounded-full
-                    {isActive ? 
-                      'bg-black text-white dark:bg-white dark:text-black shadow-sm' : 
-                      'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}"
-                  on:click|preventDefault={() => setActiveSubmenu(submenu)}
-                >
-                  {submenu.label}
-                </a>
-              {/each}
-            </div>
+      <!-- Navigation Tab Sub-Menu -->
+      {#if activeMenu.submenus.length > 0}
+        <div class="flex bg-zinc-100 dark:bg-zinc-800 rounded-full p-1 ml-4">
+          {#each activeMenu.submenus as submenu}
+            {@const isActive = submenu === activeSubmenu}
+            <a
+              href={submenu.href}
+              class="px-4 py-1 text-sm transition-colors duration-200 rounded-full
+                {isActive ? 
+                  'bg-black text-white dark:bg-white dark:text-black shadow-sm' : 
+                  'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}"
+              on:click|preventDefault={() => setActiveSubmenu(submenu)}
+            >
+              {submenu.label}
+            </a>
+          {/each}
+        </div>
+      {/if}
+
+      <div class="absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center px-6 gap-2">
+        <!-- Search -->
+        <div 
+          class="relative"
+          role="search"
+          on:mouseenter={() => isSearchExpanded = true}
+          on:mouseleave={() => isSearchExpanded = false}
+        >
+          <Search class="text-muted-foreground absolute left-2 top-2 h-4 w-4 z-10" />
+          <Input 
+            type="search" 
+            class="bg-background rounded-full p-0 transition-all duration-300 ease-in-out
+              {isSearchExpanded ? 'w-[200px] pl-8' : 'w-8 h-8 min-w-[32px]'}"
+            style="padding: 0 0 0 2rem;"
+          />
+        </div>
+
+        <!-- Dark Mode Toggle -->
+        <Button
+          variant="outline"
+          size="icon"
+          class="rounded-full h-8 w-8"
+          on:click={toggleMode}
+        >
+          {#if darkMode}
+            <Sun class="h-4 w-4" />
+          {:else}
+            <Moon class="h-4 w-4" />
           {/if}
-        </div>
+        </Button>
 
-        <div class="absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center px-6 gap-2">
-          <div 
-            class="relative ml-auto"
-            role="search"
-            on:mouseenter={() => isSearchExpanded = true}
-            on:mouseleave={() => isSearchExpanded = false}
-          >
-            <Search class="text-muted-foreground absolute left-2 top-2 h-4 w-4 z-10" />
-            <Input 
-              type="search" 
-              class="bg-background rounded-full p-0 transition-all duration-300 ease-in-out
-                {isSearchExpanded ? 'w-[200px] pl-8' : 'w-8 h-8 min-w-[32px]'}"
-              style="padding: 0 0 0 2rem;"
-            />
-          </div>
+        <!-- Notification -->
+        <Button
+          variant="outline"
+          size="icon"
+          class="rounded-full h-8 w-8"
+        >
+          <Bell class="h-4 w-4" />
+        </Button>
 
-          <Button
-            variant="outline"
-            size="icon"
-            class="rounded-full h-8 w-8"
-            on:click={toggleMode}
-          >
-            {#if darkMode}
-              <Sun class="h-4 w-4" />
-            {:else}
-              <Moon class="h-4 w-4" />
-            {/if}
-          </Button>
-
-          <Button
-            variant="outline"
-            size="icon"
-            class="rounded-full h-8 w-8"
-          >
-            <Bell class="h-4 w-4" />
-          </Button>
-
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild let:builder>
-              <Button
-                variant="outline"
-                size="icon"
-                class="rounded-full h-8 w-8 p-0 overflow-hidden"
-                builders={[builder]}
-              >
-                <img
-                  src="/images/placeholder-user.jpg"
-                  width={32}
-                  height={32}
-                  alt="Avatar"
-                  class="rounded-full w-full h-full object-cover"
-                />
-              </Button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="end">
-              <DropdownMenu.Label>Akun Saya</DropdownMenu.Label>
-              <DropdownMenu.Separator />
-              <DropdownMenu.Item>Pengaturan</DropdownMenu.Item>
-              <DropdownMenu.Item>Dukungan</DropdownMenu.Item>
-              <DropdownMenu.Separator />
-              <DropdownMenu.Item>Keluar</DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-        </div>
+        <!-- User Menu -->
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild let:builder>
+            <Button
+              variant="outline"
+              size="icon"
+              class="rounded-full h-8 w-8 p-0 overflow-hidden"
+              builders={[builder]}
+            >
+              <img
+                src="/01.png"
+                width={32}
+                height={32}
+                alt="Avatar"
+                class="rounded-full w-full h-full object-cover"
+              />
+            </Button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content align="end">
+            <DropdownMenu.Label>Akun Saya</DropdownMenu.Label>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item>Pengaturan</DropdownMenu.Item>
+            <DropdownMenu.Item>Dukungan</DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item>Keluar</DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
       </div>
+    </div>
+  </div>
 
-      <div class="flex-1 p-6 min-h-0">
-        <div class="h-full max-w-6xl mx-auto">
-          <slot />
-        </div>
-      </div>
-    </main>
+  <div class="page-container">
+    <slot />
   </div>
 </div>
 
 <style>
-  :global(body) {
-    overflow: hidden;
+  :global(body, html) {
     margin: 0;
     padding: 0;
+    height: 100%;
+    overflow: hidden;
   }
 
-  :global(.dark) .bg-white {
-    background-color: theme('colors.zinc.900');
+  .layout-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
   }
 
-  :global(.transition-all) {
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  .page-container {
+    flex: 1;
+    background: radial-gradient(
+      circle at top right,
+      rgb(255, 246, 214) 0%,
+      rgba(255, 255, 255, 0.8) 50%,
+      rgb(240, 240, 240) 100%
+    );
+    overflow-y: auto;
+    /* Add negative margin to move content under the header */
+    margin-top: -4rem;
+    padding-top: 4rem;
   }
+
 </style>

@@ -1,10 +1,12 @@
 <script lang="ts">
     import ChevronLeft from 'svelte-radix/ChevronLeft.svelte';
-    import { Button } from "$lib/components/ui/button";
   
-    const goBack = () => window.history.back();
+    export let onClick: () => void;
   </script>
   
-  <Button variant="outline" size="icon" on:click={goBack} class="rounded-full h-8 w-8 flex items-center justify-center">
-    <ChevronLeft class="h-4 w-4" />
-  </Button>
+  <button
+    class="rounded-full p-2 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700"
+    on:click={onClick}
+  >
+    <ChevronLeft class="w-4 h-4" />
+  </button>
