@@ -1,178 +1,239 @@
 <script lang="ts">
-  import { House, Search, Sun, Moon } from 'lucide-svelte';
-  import BookOpen from "lucide-svelte/icons/book-open";
-  import FileText from "lucide-svelte/icons/file-text";
-  import CalendarRange from "lucide-svelte/icons/calendar-range";
-  import GraduationCap from "lucide-svelte/icons/graduation-cap";
-  import HandPlatter from "lucide-svelte/icons/hand-platter";
-  import BookUser from "lucide-svelte/icons/book-user";
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { Sun, Moon, Bell, Search } from 'lucide-svelte';
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+  import { Button } from '$lib/components/ui/button';
+  import { Input } from '$lib/components/ui/input';
+  import ChevronLeft from 'svelte-radix/ChevronLeft.svelte';
   import { page } from '$app/stores';
-  import { Input } from "$lib/components/ui/input";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-  import { Button } from "$lib/components/ui/button";
-  import ChevronLeft from "svelte-radix/ChevronLeft.svelte";
-  
+
   let darkMode = false;
   const toggleMode = () => {
     darkMode = !darkMode;
     document.documentElement.classList.toggle('dark');
   };
 
-  const navItems = [
-    { icon: House, label: 'Beranda', href: '/beranda', badge: null },
-    { icon: BookUser, label: 'Dosen', href: '/dosen', badge: null },
-    { icon: GraduationCap, label: 'Mahasiswa', href: '/mahasiswa', badge: null },
-    { icon: HandPlatter, label: 'Layanan Umum', href: '/layanan-umum', badge: null },
-    { icon: BookOpen, label: 'Perkuliahan', href: '/perkuliahan', badge: null },
-    { icon: FileText, label: 'Ujian', href: '/ujian', badge: null },
-    { icon: CalendarRange, label: 'Kegiatan', href: '/kegiatan', badge: null }
+  const menus = [
+    { 
+      label: 'Beranda', 
+      href: '/beranda', 
+      submenus: [] 
+    },
+    { 
+      label: 'Dosen', 
+      href: '/dosen', 
+      submenus: [
+        { label: 'Dosen', href: '/dosen' },
+        { label: 'Profil', href: '/dosen/profil' }
+      ] 
+    },
+    { 
+      label: 'Mahasiswa', 
+      href: '/mahasiswa', 
+      submenus: [
+        { label: 'Mahasiswa', href: '/mahasiswa' },
+        { label: 'Profil', href: '/mahasiswa/profil' }
+      ] 
+    },
+    { 
+      label: 'Perkuliahan', 
+      href: '/perkuliahan', 
+      submenus: [
+        { label: 'Perkuliahan', href: '/perkuliahan' },
+        { label: 'Penjadwalan', href: '/perkuliahan/penjadwalan' },
+        { label: 'Kurikulum', href: '/perkuliahan/kurikulum' }
+      ] 
+    },
+    { 
+      label: 'Ujian', 
+      href: '/ujian', 
+      submenus: [
+        { label: 'Ujian', href: '/ujian' },
+        { label: 'Pengajuan Pembimbing', href: '/ujian/pengajuan-pembimbing' },
+        { label: 'Pendaftaran Ujian', href: '/ujian/pendaftaran-ujian' },
+        { label: 'Jadwal Ujian', href: '/ujian/jadwal-ujian' }
+      ] 
+    },
+    { 
+      label: 'Layanan Umum', 
+      href: '/layanan-umum', 
+      submenus: [
+        { label: 'Layanan Umum', href: '/layanan-umum' },
+        { label: 'Yudisium & Wisuda', href: '/layanan-umum/yudisium-wisuda' },
+        { label: 'Surat & SK', href: '/layanan-umum/surat-sk' }
+      ] 
+    }
   ];
 
-  const tabs = [
-    { label: 'Beranda', href: '/beranda' },
-    { label: 'Profil', href: '/profile' }
-  ];
+  let isSearchExpanded = false;
+  let activeMenu = menus[0];
+  let activeSubmenu: { label: string; href: string } | null = null;
+
+  const setActiveMenu = async (menu: { label: string; href: string; submenus: { label: string; href: string }[] }) => {
+    activeMenu = menu;
+    if (menu.submenus.length > 0) {
+      activeSubmenu = menu.submenus[0];
+      await goto(menu.submenus[0].href);
+    } else {
+      activeSubmenu = null;
+      await goto(menu.href);
+    }
+  };
+
+  const setActiveSubmenu = async (submenu: { label: string; href: string }) => {
+    activeSubmenu = submenu;
+    await goto(submenu.href);
+  };
 
   const goBack = () => {
     window.history.back();
   };
+
+  onMount(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    }
+    const currentPath = $page.url.pathname;
+    const currentMenu = menus.find(menu => currentPath.startsWith(menu.href));
+    if (currentMenu) {
+      if (currentMenu.submenus.length > 0) {
+        const currentSubmenu = currentMenu.submenus.find(submenu => submenu.href === currentPath);
+        if (currentSubmenu) {
+          activeSubmenu = currentSubmenu;
+        } else {
+          activeSubmenu = currentMenu.submenus[0];
+        }
+      }
+      activeMenu = currentMenu;
+    }
+  });
 </script>
 
-<div class="flex flex-col md:flex-row h-screen bg-black text-white overflow-hidden">
-  <!-- Main Content Area -->
-  <div class="flex-1 bg-black p-4 order-1 md:order-2">
-    <main class="h-full bg-white text-black rounded-[24px] overflow-auto dark:bg-zinc-900 dark:text-white">
-      <!-- Header -->
-      <div class="sticky top-0 z-10 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-        <div class="flex items-center justify-between px-6 py-2">
-          <div class="flex items-center space-x-3">
-            <Button variant="outline" size="icon" on:click={goBack} class="rounded-full h-8 w-8 flex items-center justify-center">
-              <ChevronLeft class="h-4 w-4" />
-            </Button>
+<div class="grid h-[100vh] grid-rows-[1fr,auto] bg-black text-white">
+  <div class="p-4 row-start-1">
+    <main class="h-full bg-white text-black rounded-[24px] flex flex-col dark:bg-zinc-900 dark:text-white overflow-hidden">
+      <div class="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0 relative">
+        <div class="flex items-center h-16 px-6">
+          <Button variant="outline" size="icon" on:click={goBack} class="rounded-full h-8 w-8 flex items-center justify-center">
+            <ChevronLeft class="h-4 w-4" />
+          </Button>
 
-            <div class="relative w-full max-w-md">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search class="h-4 w-4 text-zinc-400" />
-              </div>
-              <Input
-                type="search"
-                placeholder="Cari..."
-                class="w-full pl-10 bg-zinc-100 dark:bg-zinc-800 border-none h-8"
-              />
-            </div>
+          <div class="flex bg-zinc-100 dark:bg-zinc-800 rounded-full p-1 ml-4">
+            {#each menus as menu}
+              {@const isActive = menu === activeMenu}
+              <a
+                href={menu.href}
+                class="px-4 py-1 text-sm transition-colors duration-200 rounded-full
+                  {isActive ? 
+                    'bg-black text-white dark:bg-white dark:text-black shadow-sm' : 
+                    'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}"
+                on:click|preventDefault={() => setActiveMenu(menu)}
+              >
+                {menu.label}
+              </a>
+            {/each}
           </div>
 
-          <!-- Centered Navigation Tabs -->
-          <div class="absolute left-1/2 transform -translate-x-1/2">
-            <div class="flex bg-zinc-100 dark:bg-zinc-800 rounded-full p-1">
-              {#each tabs as tab}
-                {@const isActive = $page.url.pathname === tab.href}
+          {#if activeMenu.submenus.length > 0}
+            <div class="flex bg-zinc-100 dark:bg-zinc-800 rounded-full p-1 ml-4">
+              {#each activeMenu.submenus as submenu}
+                {@const isActive = submenu === activeSubmenu}
                 <a
-                  href={tab.href}
+                  href={submenu.href}
                   class="px-4 py-1 text-sm transition-colors duration-200 rounded-full
                     {isActive ? 
                       'bg-black text-white dark:bg-white dark:text-black shadow-sm' : 
                       'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'}"
+                  on:click|preventDefault={() => setActiveSubmenu(submenu)}
                 >
-                  {tab.label}
+                  {submenu.label}
                 </a>
               {/each}
             </div>
-          </div>
-          
-          <div class="flex items-center space-x-3">
-            <button
-              on:click={toggleMode}
-              class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors duration-200 h-8 w-8 flex items-center justify-center"
-            >
-              <div class="relative h-5 w-5">
-                <Sun class="absolute h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-zinc-600 dark:text-zinc-400" />
-                <Moon class="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-zinc-600 dark:text-zinc-400" />
-              </div>
-            </button>
+          {/if}
+        </div>
 
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild let:builder>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  class="rounded-full h-8 w-8 p-0 overflow-hidden"
-                  builders={[builder]}
-                >
-                  <img
-                    src="/images/placeholder-user.jpg"
-                    width={32}
-                    height={32}
-                    alt="Avatar"
-                    class="rounded-full w-full h-full object-cover"
-                  />
-                </Button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content align="end">
-                <DropdownMenu.Label>Akun Saya</DropdownMenu.Label>
-                <DropdownMenu.Separator />
-                <DropdownMenu.Item>Pengaturan</DropdownMenu.Item>
-                <DropdownMenu.Item>Dukungan</DropdownMenu.Item>
-                <DropdownMenu.Separator />
-                <DropdownMenu.Item>Keluar</DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Root>
+        <div class="absolute right-0 top-1/2 transform -translate-y-1/2 flex items-center px-6 gap-2">
+          <div 
+            class="relative ml-auto"
+            role="search"
+            on:mouseenter={() => isSearchExpanded = true}
+            on:mouseleave={() => isSearchExpanded = false}
+          >
+            <Search class="text-muted-foreground absolute left-2 top-2 h-4 w-4 z-10" />
+            <Input 
+              type="search" 
+              class="bg-background rounded-full p-0 transition-all duration-300 ease-in-out
+                {isSearchExpanded ? 'w-[200px] pl-8' : 'w-8 h-8 min-w-[32px]'}"
+              style="padding: 0 0 0 2rem;"
+            />
           </div>
+
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild let:builder>
+              <Button
+                variant="outline"
+                size="icon"
+                class="rounded-full h-8 w-8 p-0 overflow-hidden"
+                builders={[builder]}
+              >
+                <img
+                  src="/images/placeholder-user.jpg"
+                  width={32}
+                  height={32}
+                  alt="Avatar"
+                  class="rounded-full w-full h-full object-cover"
+                />
+              </Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="end">
+              <DropdownMenu.Label>Akun Saya</DropdownMenu.Label>
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item on:click={toggleMode}>
+                <div class="flex items-center space-x-2">
+                  <Sun class="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                  <span>Mode Gelap</span>
+                </div>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item>
+                <div class="flex items-center space-x-2">
+                  <Bell class="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+                  <span>Notifikasi</span>
+                </div>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item>Pengaturan</DropdownMenu.Item>
+              <DropdownMenu.Item>Dukungan</DropdownMenu.Item>
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item>Keluar</DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
         </div>
       </div>
 
-      <!-- Page Content -->
-      <div class="p-8">
-        <div class="max-w-6xl mx-auto">
+      <div class="flex-1 p-6 min-h-0">
+        <div class="h-full max-w-6xl mx-auto">
           <slot />
         </div>
       </div>
     </main>
   </div>
-
-  <!-- Navigation Bar -->
-  <nav class="group md:w-16 md:hover:w-48 h-16 md:h-screen shrink-0 transition-all duration-300 ease-in-out bg-black order-2 md:order-1 fixed md:relative bottom-0 left-0 right-0">
-    <div class="h-full flex items-center justify-center p-4">
-      <!-- Navigation Container -->
-      <div class="w-full md:space-y-6 flex md:flex-col items-center md:items-stretch">
-        <!-- Navigation Menu -->
-        <div class="flex md:flex-col md:space-y-2 w-full overflow-x-auto md:overflow-x-visible">
-          {#each navItems as item}
-            {@const isActive = $page.url.pathname === item.href}
-            <div class="relative flex-shrink-0">
-              <a
-                href={item.href}
-                class="relative flex items-center px-3 py-2 transition-colors duration-200 {isActive ? 'text-white' : 'text-zinc-400 hover:text-white'}"
-              >
-                <svelte:component this={item.icon} class="h-4 w-4 min-w-[1rem]" />
-                <span class="hidden md:block ml-2 truncate opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  {item.label}
-                </span>
-              </a>
-            </div>
-          {/each}
-        </div>
-      </div>
-    </div>
-  </nav>
 </div>
 
 <style>
-  .transition-all {
-    transition: all 0.3s ease-in-out;
-  }
-
-  /* Hide scrollbar but keep functionality */
-  .overflow-x-auto {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .overflow-x-auto::-webkit-scrollbar {
-    display: none;
+  :global(body) {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
   }
 
   :global(.dark) .bg-white {
     background-color: theme('colors.zinc.900');
+  }
+
+  :global(.transition-all) {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 </style>
