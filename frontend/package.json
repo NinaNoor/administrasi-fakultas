@@ -28,6 +28,7 @@
 	"dependencies": {
 		"lucide-svelte": "^0.460.1",
 		"mode-watcher": "^0.4.1",
+		"svelte-preprocess": "^6.0.3",
 		"svelte-radix": "^2.0.1"
 	}
 }

@@ -364,13 +364,13 @@ const getSubmenuColor = (menuHref: string, submenuHref: string): string => {
 
   .page-container {
     flex: 1;
-    background: linear-gradient(to right, #EF4444, #F97316); /* light mode: teal-400 to yellow-200 */
+    background: linear-gradient(to right, #F59E0B, #EC4899); /* light mode: teal-400 to yellow-200 */
     overflow-y: auto;
     margin-top: -4rem;
     padding-top: 4rem;
   }
 
   :global(.dark) .page-container {
-    background: linear-gradient(to right, #B91C1C, #C2410C); /* dark mode: teal-800 to yellow-700 */
+    background: linear-gradient(to right, #B45309, #9D174D); /* dark mode: teal-800 to yellow-700 */
   }
 </style>
